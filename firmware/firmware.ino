@@ -26,7 +26,7 @@
 
 #define NUM_ROWS 5
 #define NUM_COLS 16
-#define BOUNCE_MS 5
+#define BOUNCE_MS 6
 
 // This is defined by the Teensyduino keyboard module.
 #define MAX_KEYS_PRESSED 6
