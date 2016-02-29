@@ -40,7 +40,7 @@ Bounce *buttons[NUM_ROWS][NUM_COLS];
 int keys[NUM_ROWS][NUM_COLS] =
   {{KEY_EQUAL, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_F2, KEY_F1, KEY_F5, KEY_F6, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0, KEY_MINUS},
    {KEY_TAB, KEY_Q, KEY_W, KEY_E, KEY_R, KEY_T, KEY_F3, KEY_ESC, KEY_TILDE, KEY_F7, KEY_Y, KEY_U, KEY_I, KEY_O, KEY_P, KEY_BACKSLASH},
-   {0, KEY_A, KEY_S, KEY_D, KEY_F, KEY_G, KEY_F4, 0, KEY_PAGE_UP, KEY_F7, KEY_H, KEY_J, KEY_K, KEY_L, KEY_SEMICOLON, KEY_QUOTE},
+   {0, KEY_A, KEY_S, KEY_D, KEY_F, KEY_G, KEY_F4, 0, KEY_PAGE_UP, KEY_BACKSPACE, KEY_H, KEY_J, KEY_K, KEY_L, KEY_SEMICOLON, KEY_QUOTE},
    {0, KEY_Z, KEY_X, KEY_C, KEY_V, KEY_B, 0, KEY_ESC, KEY_PAGE_DOWN, KEY_TAB, KEY_N, KEY_M, KEY_COMMA, KEY_PERIOD, KEY_SLASH, 0},
    {KEY_HOME, KEY_TILDE, KEY_TILDE, KEY_LEFT, KEY_RIGHT, 0, 0, KEY_DELETE, KEY_DELETE, KEY_ENTER, KEY_SPACE, KEY_DOWN, KEY_UP, KEY_LEFT_BRACE, KEY_RIGHT_BRACE, KEY_END}};
 
@@ -51,6 +51,13 @@ unsigned int modifiers[NUM_ROWS][NUM_COLS] =
    {MODIFIERKEY_CTRL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
    {MODIFIERKEY_SHIFT, 0, 0, 0, 0, 0, MODIFIERKEY_ALT, 0, 0, 0, 0, 0, 0, 0, 0, MODIFIERKEY_SHIFT},
    {0, 0, 0, 0, 0, MODIFIERKEY_CTRL, MODIFIERKEY_GUI, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+
+int taps[NUM_ROWS][NUM_COLS] =
+  {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+   {0, 0, 0, 0, 0, KEY_BACKSPACE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
 int keyState[NUM_ROWS][NUM_COLS];
 
@@ -102,10 +109,12 @@ void loop() {
       if (keyState[r][c]) {
 	if (modifiers[r][c]) {
 	  mods |= modifiers[r][c];
-	} else if (keys[r][c] && keys_set < MAX_KEYS_PRESSED) {
-	  keys_pressed[keys_set] = keys[r][c];
-	  keys_set++;
 	}
+	key = keys[r][c];
+      }
+      if (key && keys_set < MAX_KEYS_PRESSED) {
+	  keys_pressed[keys_set] = key;
+	  keys_set++;
       }
     }
     for (int i=0; i < 2; i++) {
