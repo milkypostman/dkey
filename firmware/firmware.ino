@@ -27,6 +27,7 @@
 #define NUM_ROWS 5
 #define NUM_COLS 16
 #define BOUNCE_MS 6
+#define TAP_TIME 200
 
 // This is defined by the Teensyduino keyboard module.
 #define MAX_KEYS_PRESSED 6
@@ -35,7 +36,6 @@ int rows[NUM_ROWS][2] = {{PIN_D3, PIN_B4}, {PIN_D7, 0}, {PIN_C6, 0}, {PIN_D4, 0}
 int cols[NUM_COLS] = {PIN_B0, PIN_B1, PIN_B2, PIN_B3, PIN_B7, PIN_D0, PIN_D1, PIN_D2,
                       PIN_B5, PIN_B6, PIN_F7, PIN_F6, PIN_F5, PIN_F4, PIN_F1, PIN_F0};
 
-Bounce *buttons[NUM_ROWS][NUM_COLS];
 
 int keys[NUM_ROWS][NUM_COLS] =
   {{KEY_EQUAL, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_F2, KEY_F1, KEY_F5, KEY_F6, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0, KEY_MINUS},
@@ -57,13 +57,19 @@ int taps[NUM_ROWS][NUM_COLS] =
    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0, KEY_BACKSPACE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+   {0, 0, 0, 0, 0, KEY_ESC, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
+
+Bounce *buttons[NUM_ROWS][NUM_COLS];
 int keyState[NUM_ROWS][NUM_COLS];
+
+elapsedMillis clocker;
 
 void setup() {
   Serial.begin(9600);
   Serial.println("starting...");
+
+  clocker=0;
 
   for (int i=0; i < NUM_ROWS; i++) {
     for (int j=0; j < 2; j++) {
@@ -80,14 +86,18 @@ void setup() {
     for (int c=0; c < NUM_COLS; c++) {
       keyState[r][c] = 0;
       buttons[r][c] = new Bounce(cols[c], BOUNCE_MS);
+      Serial.print(".");
     }
+    Serial.println("");
   }
+  Serial.println("done...");
 }
 
 void loop() {
   int mods = 0;
   int keys_pressed[MAX_KEYS_PRESSED];
   int keys_set = 0;
+  int keys_down = 0;
   for (int i=0; i < MAX_KEYS_PRESSED; i++) {
     keys_pressed[i] = 0;
   }
@@ -99,22 +109,20 @@ void loop() {
       }
     }
     for (int c=0; c < NUM_COLS; c++) {
-      int key = 0;
       buttons[r][c]->update();
       if (buttons[r][c]->fallingEdge()) {
-	keyState[r][c] = 1;
+	keyState[r][c] = clocker;
       } else if (buttons[r][c]->risingEdge()) {
+	if ((clocker - keyState[r][c]) < TAP_TIME) {
+	  if (taps[r][c] && keys_set < MAX_KEYS_PRESSED) {
+	    keys_pressed[keys_set] = taps[r][c];
+	    keys_set++;
+	  }
+	}
 	keyState[r][c] = 0;
       }
       if (keyState[r][c]) {
-	if (modifiers[r][c]) {
-	  mods |= modifiers[r][c];
-	}
-	key = keys[r][c];
-      }
-      if (key && keys_set < MAX_KEYS_PRESSED) {
-	  keys_pressed[keys_set] = key;
-	  keys_set++;
+	keys_down++;
       }
     }
     for (int i=0; i < 2; i++) {
@@ -123,12 +131,31 @@ void loop() {
       }
     }
   }
+  for (int r=0; r < NUM_ROWS; r++) {
+    for (int c=0; c < NUM_COLS; c++) {
+      if (keyState[r][c]) {
+	if (taps[r][c] && (clocker - keyState[r][c]) < TAP_TIME && keys_down > 1) {
+	  keyState[r][c] += TAP_TIME;
+	}
+	if (!taps[r][c] || (clocker - keyState[r][c]) > TAP_TIME) {
+	  if (modifiers[r][c]) {
+	    mods |= modifiers[r][c];
+	  }
+	  keys_pressed[keys_set] = keys[r][c];
+	  keys_set++;
+	}
+      }
+    }
+  }
+  if (keys_down == 0) {
+    clocker = 1;
+  }
+  Keyboard.set_modifier(mods);
   Keyboard.set_key1(keys_pressed[0]);
   Keyboard.set_key2(keys_pressed[1]);
   Keyboard.set_key3(keys_pressed[2]);
   Keyboard.set_key4(keys_pressed[3]);
   Keyboard.set_key5(keys_pressed[4]);
   Keyboard.set_key6(keys_pressed[5]);
-  Keyboard.set_modifier(mods);
   Keyboard.send_now();
 }
