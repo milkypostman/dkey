@@ -38,86 +38,88 @@ int cols[NUM_COLS] = {PIN_B0, PIN_B1, PIN_B2, PIN_B3, PIN_B7, PIN_D0, PIN_D1, PI
 Bounce *buttons[NUM_ROWS][NUM_COLS];
 
 int keys[NUM_ROWS][NUM_COLS] =
-{{KEY_EQUAL, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_F2, KEY_F1, KEY_F5, KEY_F6, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0, KEY_MINUS},
- {KEY_TAB, KEY_Q, KEY_W, KEY_E, KEY_R, KEY_T, KEY_F3, KEY_ESC, KEY_TILDE, KEY_F7, KEY_Y, KEY_U, KEY_I, KEY_O, KEY_P, KEY_BACKSLASH},
- {0, KEY_A, KEY_S, KEY_D, KEY_F, KEY_G, KEY_F4, 0, KEY_PAGE_UP, KEY_F7, KEY_H, KEY_J, KEY_K, KEY_L, KEY_SEMICOLON, KEY_QUOTE},
- {0, KEY_Z, KEY_X, KEY_C, KEY_V, KEY_B, 0, KEY_ESC, KEY_PAGE_DOWN, KEY_TAB, KEY_N, KEY_M, KEY_COMMA, KEY_PERIOD, KEY_SLASH, 0},
- {KEY_HOME, KEY_TILDE, KEY_LEFT, KEY_RIGHT, KEY_BACKSPACE, 0, 0, KEY_DELETE, KEY_DELETE, KEY_ENTER, KEY_SPACE, KEY_DOWN, KEY_UP, KEY_LEFT_BRACE, KEY_RIGHT_BRACE, KEY_END}};
+  {{KEY_EQUAL, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_F2, KEY_F1, KEY_F5, KEY_F6, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0, KEY_MINUS},
+   {KEY_TAB, KEY_Q, KEY_W, KEY_E, KEY_R, KEY_T, KEY_F3, KEY_ESC, KEY_TILDE, KEY_F7, KEY_Y, KEY_U, KEY_I, KEY_O, KEY_P, KEY_BACKSLASH},
+   {0, KEY_A, KEY_S, KEY_D, KEY_F, KEY_G, KEY_F4, 0, KEY_PAGE_UP, KEY_F7, KEY_H, KEY_J, KEY_K, KEY_L, KEY_SEMICOLON, KEY_QUOTE},
+   {0, KEY_Z, KEY_X, KEY_C, KEY_V, KEY_B, 0, KEY_ESC, KEY_PAGE_DOWN, KEY_TAB, KEY_N, KEY_M, KEY_COMMA, KEY_PERIOD, KEY_SLASH, 0},
+   {KEY_HOME, KEY_TILDE, KEY_TILDE, KEY_LEFT, KEY_RIGHT, 0, 0, KEY_DELETE, KEY_DELETE, KEY_ENTER, KEY_SPACE, KEY_DOWN, KEY_UP, KEY_LEFT_BRACE, KEY_RIGHT_BRACE, KEY_END}};
 
 // Modifiers overwrite keys above.
 unsigned int modifiers[NUM_ROWS][NUM_COLS] =
-{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
- {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
- {MODIFIERKEY_CTRL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
- {MODIFIERKEY_SHIFT, 0, 0, 0, 0, 0, MODIFIERKEY_ALT, 0, 0, 0, 0, 0, 0, 0, 0, MODIFIERKEY_SHIFT},
- {0, 0, 0, 0, 0, MODIFIERKEY_CTRL, MODIFIERKEY_GUI, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+  {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+   {MODIFIERKEY_CTRL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+   {MODIFIERKEY_SHIFT, 0, 0, 0, 0, 0, MODIFIERKEY_ALT, 0, 0, 0, 0, 0, 0, 0, 0, MODIFIERKEY_SHIFT},
+   {0, 0, 0, 0, 0, MODIFIERKEY_CTRL, MODIFIERKEY_GUI, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
 int keyState[NUM_ROWS][NUM_COLS];
 
 void setup() {
-    Serial.begin(9600);
+  Serial.begin(9600);
+  Serial.println("starting...");
 
-    for (int i=0; i < NUM_ROWS; i++) {
-        for (int j=0; j < 2; j++) {
-            if (rows[i][j]) {
-                pinMode(rows[i][j], INPUT);
-            }
-        }
+  for (int i=0; i < NUM_ROWS; i++) {
+    for (int j=0; j < 2; j++) {
+      if (rows[i][j]) {
+	pinMode(rows[i][j], INPUT);
+      }
     }
-    for (int i=0; i < NUM_COLS; i++) {
-        pinMode(cols[i], INPUT_PULLUP);
-    }
+  }
+  for (int i=0; i < NUM_COLS; i++) {
+    pinMode(cols[i], INPUT_PULLUP);
+  }
 
-    for (int r=0; r < NUM_ROWS; r++) {
-        for (int c=0; c < NUM_COLS; c++) {
-            keyState[r][c] = 0;
-            buttons[r][c] = new Bounce(cols[c], BOUNCE_MS);
-        }
+  for (int r=0; r < NUM_ROWS; r++) {
+    for (int c=0; c < NUM_COLS; c++) {
+      keyState[r][c] = 0;
+      buttons[r][c] = new Bounce(cols[c], BOUNCE_MS);
     }
+  }
 }
 
 void loop() {
-    int mods = 0;
-    int keys_pressed[MAX_KEYS_PRESSED];
-    int keys_set = 0;
-    for (int i=0; i < MAX_KEYS_PRESSED; i++) {
-        keys_pressed[i] = 0;
-    }
+  int mods = 0;
+  int keys_pressed[MAX_KEYS_PRESSED];
+  int keys_set = 0;
+  for (int i=0; i < MAX_KEYS_PRESSED; i++) {
+    keys_pressed[i] = 0;
+  }
 
-    for (int r=0; r < NUM_ROWS; r++) {
-        for (int i=0; i < 2; i++) {
-            if (rows[r][i]) {
-                pinMode(rows[r][i], OUTPUT);
-            }
-        }
-        for (int c=0; c < NUM_COLS; c++) {
-            buttons[r][c]->update();
-            if (buttons[r][c]->fallingEdge()) {
-                keyState[r][c] = 1;
-            } else if (buttons[r][c]->risingEdge()) {
-                keyState[r][c] = 0;
-            }
-            if (keyState[r][c]) {
-                if (modifiers[r][c]) {
-                    mods |= modifiers[r][c];
-                } else if (keys[r][c] && keys_set < MAX_KEYS_PRESSED) {
-                    keys_pressed[keys_set] = keys[r][c];
-                    keys_set++;
-                }
-            }
-        }
-        for (int i=0; i < 2; i++) {
-            if (rows[r][i]) {
-                pinMode(rows[r][i], INPUT);
-            }
-        }
+  for (int r=0; r < NUM_ROWS; r++) {
+    for (int i=0; i < 2; i++) {
+      if (rows[r][i]) {
+	pinMode(rows[r][i], OUTPUT);
+      }
     }
-    Keyboard.set_key1(keys_pressed[0]);
-    Keyboard.set_key2(keys_pressed[1]);
-    Keyboard.set_key3(keys_pressed[2]);
-    Keyboard.set_key4(keys_pressed[3]);
-    Keyboard.set_key5(keys_pressed[4]);
-    Keyboard.set_key6(keys_pressed[5]);
-    Keyboard.set_modifier(mods);
-    Keyboard.send_now();
+    for (int c=0; c < NUM_COLS; c++) {
+      int key = 0;
+      buttons[r][c]->update();
+      if (buttons[r][c]->fallingEdge()) {
+	keyState[r][c] = 1;
+      } else if (buttons[r][c]->risingEdge()) {
+	keyState[r][c] = 0;
+      }
+      if (keyState[r][c]) {
+	if (modifiers[r][c]) {
+	  mods |= modifiers[r][c];
+	} else if (keys[r][c] && keys_set < MAX_KEYS_PRESSED) {
+	  keys_pressed[keys_set] = keys[r][c];
+	  keys_set++;
+	}
+      }
+    }
+    for (int i=0; i < 2; i++) {
+      if (rows[r][i]) {
+	pinMode(rows[r][i], INPUT);
+      }
+    }
+  }
+  Keyboard.set_key1(keys_pressed[0]);
+  Keyboard.set_key2(keys_pressed[1]);
+  Keyboard.set_key3(keys_pressed[2]);
+  Keyboard.set_key4(keys_pressed[3]);
+  Keyboard.set_key5(keys_pressed[4]);
+  Keyboard.set_key6(keys_pressed[5]);
+  Keyboard.set_modifier(mods);
+  Keyboard.send_now();
 }
