@@ -32,9 +32,11 @@
 // This is defined by the Teensyduino keyboard module.
 #define MAX_KEYS_PRESSED 6
 
-int rows[NUM_ROWS][2] = {{PIN_D3, PIN_B4}, {PIN_D7, 0}, {PIN_C6, 0}, {PIN_D4, 0}, {PIN_D5, 0}};
-int cols[NUM_COLS] = {PIN_B0, PIN_B1, PIN_B2, PIN_B3, PIN_B7, PIN_D0, PIN_D1, PIN_D2,
-                      PIN_B5, PIN_B6, PIN_F7, PIN_F6, PIN_F5, PIN_F4, PIN_F1, PIN_F0};
+int rows[NUM_ROWS][2] = {{PIN_D3, 0},  {PIN_B4, 0}, {PIN_C6, 0}, {PIN_D7, 0}, {PIN_D5, 0}};
+int cols[NUM_COLS] = {
+  PIN_F0, PIN_F1, PIN_F5, PIN_F4, PIN_F6, PIN_F7, PIN_B6, PIN_B5,
+  PIN_D2, PIN_D1, PIN_D0, PIN_B7, PIN_B3, PIN_B2, PIN_B1, PIN_B0
+};
 
 
 int keys[NUM_ROWS][NUM_COLS] =
@@ -135,7 +137,7 @@ void loop() {
     for (int c=0; c < NUM_COLS; c++) {
       if (keyState[r][c]) {
 	if (taps[r][c] && (clocker - keyState[r][c]) < TAP_TIME && keys_down > 1) {
-	  keyState[r][c] += TAP_TIME;
+	  keyState[r][c] -= TAP_TIME;
 	}
 	if (!taps[r][c] || (clocker - keyState[r][c]) > TAP_TIME) {
 	  if (modifiers[r][c]) {
